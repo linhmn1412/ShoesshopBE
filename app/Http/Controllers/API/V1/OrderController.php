@@ -201,4 +201,22 @@ class OrderController extends RoutingController
       
         
     }
+
+    public function receiveOrder (Request $request){
+        $user = $request->user();
+     
+            $order = Order::find($request->id_order);
+            if(!$order){
+                return response()->json(["message"=>"Không tìm thấy đơn hàng"]);
+            }
+            if($order->status === "Đã xác nhận");
+            {
+                $order->update(['status' => 'Hoàn thành']);
+                return response()->json(["message"=> "Đơn hàng hoàn tất, hãy cho nhận xét về đơn hàng!"]);
+
+            }
+            return response()->json(["message"=>"Đơn hàng không thể cập nhật"]);
+      
+        
+    }
 }

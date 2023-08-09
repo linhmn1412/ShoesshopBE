@@ -38,8 +38,7 @@ Route::group(['prefix' => 'v1'], function () {
     Route::get('/products/price={p1}-{p2}', [ProductController::class, 'getProductsByPrice']);
     Route::get('/products/sale={sale}', [ProductController::class, 'getProductsSale']);
 
-    Route::post('product/create', [ProductController::class, 'store']);
-    Route::get('/product/{id}/{image}', [ProductController::class, 'getImage']);
+    Route::get('/product/{id}/image', [ProductController::class, 'getImage']);
     Route::get('/product/{id}', [ProductController::class, 'getProductDetail']);
 
     //discount 
@@ -71,6 +70,7 @@ Route::group(['prefix' => 'v1'], function () {
         Route::get('/getAllOrders', [OrderController::class, 'getAllOrders']);
         Route::put('/order/approve', [OrderController::class, 'approveOrder']);
         Route::put('/order/cancel', [OrderController::class, 'cancelOrder']);
+        Route::put('/order/receive', [OrderController::class, 'receiveOrder']);
         Route::get('/getOrdersByUser', [OrderController::class, 'getOrdersByUser']);
 
         //manage discount
@@ -84,6 +84,9 @@ Route::group(['prefix' => 'v1'], function () {
 
         //manage products
         Route::get('/getAllProducts', [ProductController::class, 'getAllProductsAdmin']);
+        Route::post('/product/create', [ProductController::class, 'store']);
+        Route::post('/product-create', [ProductController::class, 'createProduct']);
+
 
         //review 
         Route::post('/reviews/create', [ReviewController::class, 'store']);

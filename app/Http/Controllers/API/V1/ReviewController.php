@@ -28,6 +28,7 @@ class ReviewController extends RoutingController
      */
     public function store(Request $request)
     {
+       // print($request);
         $user = $request->user();
         $createdReviews = [];
         foreach ($request->all() as $reviewData) {

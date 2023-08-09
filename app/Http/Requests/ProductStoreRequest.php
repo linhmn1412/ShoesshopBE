@@ -28,15 +28,11 @@ class ProductStoreRequest extends FormRequest
                 'name_shoe' => 'required|string|max:255',
                 'id_category' => 'required|exists:category,id_category',
                 'id_brand' => 'required|exists:brand,id_brand',
-                'id_brand' => 'required|exists:brand,id_brand',
                 'description' => 'nullable|string',
                 'price' => 'required|numeric|min:0',
-                'image_1' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-                'image_2' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-                'image_3' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-                'id_discount' => 'required|exists:discount,id_discount',
-                'id_creator' => 'required|exists:staff,id_staff',
-                'id_editor' => 'required|exists:staff,id_staff',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'id_discount' => 'nullable|exists:discount,id_discount',
+                'id_staff' => 'required|exists:staff,id_staff',
                 
             ];
         }

@@ -35,52 +35,46 @@ class ProductController extends RoutingController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(ProductStoreRequest $request)
+    public function createProduct(Request $request)
     {
-        try {
-            $imageName1 = Str::random(32).".".$request->image_1->getClientOriginalExtension();
-            $imageName2 = Str::random(32).".".$request->image_2->getClientOriginalExtension();
-            $imageName3 = Str::random(32).".".$request->image_3->getClientOriginalExtension();
-     
-            // Create Post
-            Shoe::create([
-                'name_shoe' => $request->name_shoe,
-                'id_category' => $request->id_category,
-                'id_brand' => $request->id_brand,
-                'description' => $request->description,
-                'price' => $request->price,
-                'image_1' => $imageName1,
-                'image_2' => $imageName2,
-                'image_3' => $imageName3,
-                'id_discount' => $request->id_discount,
-                'id_creator' => $request->id_creator,
-                'id_editor' => $request->id_editor
-                
-            ]);
-     
-            // Save Image in Storage folder
-            Storage::disk('public')->put($imageName1, file_get_contents($request->image_1));
-            Storage::disk('public')->put($imageName2, file_get_contents($request->image_2));
-            Storage::disk('public')->put($imageName3, file_get_contents($request->image_3));
-     
-            // Return Json Response
-            return response()->json([
-                'message' => "Product successfully created."
-            ],200);
-        } catch (\Exception $e) {
-            // Return Json Response
-            return response()->json([
-                'message' => "Created product fail!"
-            ],500);
+        $user = $request->user();
+       // dd($user);
+        if ($user->id_role === 1 || $user->id_role === 2) {
+            try {
+                $imageName = Str::random(32) . "." . $request->image->getClientOriginalExtension();
+                Shoe::create([
+                    'name_shoe' => $request->name_shoe,
+                    'id_category' => $request->id_category,
+                    'id_brand' => $request->id_brand,
+                    'description' => $request->description,
+                    'price' => $request->price,
+                    'image' => $imageName,
+                    'id_discount' => $request->id_discount,
+                    'id_staff' => $user->id_user,
+                ]);
+                // Save Image in Storage folder
+                Storage::disk('public')->put($imageName, file_get_contents($request->image));
+                // Return Json Response
+                return response()->json([
+                    'message' => "Thêm sản phẩm thành công"
+                ], 200);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => "Tạo sản phẩm thất bại!"
+                ], 500);
+            }
         }
+        return response()->json([
+            'message' => "Người dùng không có quyền truy cập!"
+        ], 403);
     }
-    public function getImage($id, $image)
+    public function getImage($id)
     {
         $product = Shoe::findOrFail($id);
 
         // Xác định đường dẫn của hình ảnh trong storage
 
-        $imagePath = 'public/'.$product->$image;
+        $imagePath = 'public/' . $product->image;
 
 
         // Kiểm tra xem hình ảnh có tồn tại trong storage hay không
@@ -141,23 +135,23 @@ class ProductController extends RoutingController
             DB::raw('(SELECT name_brand FROM brand WHERE id_brand = shoe.id_brand) as name_brand'),
 
         )
-        ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
-        ->groupBy('sv.id_shoe')
-        ->paginate(9);
+            ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->groupBy('sv.id_shoe')
+            ->paginate(9);
 
-    return response()->json($result);
+        return response()->json($result);
     }
 
-     public function getProductsNewArrivals()
+    public function getProductsNewArrivals()
     {
         $result = Shoe::select(
             'shoe.*',
             DB::raw('SUM(sv.quantity_stock) as stock'),
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
-        ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
-        ->groupBy('sv.id_shoe')
-        ->orderBy('created_at', 'desc')->paginate(9);
+            ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->groupBy('sv.id_shoe')
+            ->orderBy('created_at', 'desc')->paginate(9);
 
         return response()->json($result);
     }
@@ -169,9 +163,9 @@ class ProductController extends RoutingController
             DB::raw('SUM(sv.quantity_stock) as stock'),
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
-        ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
-        ->groupBy('sv.id_shoe')
-        ->orderByRaw('SUM(sv.quantity_sold) DESC')->paginate(9);
+            ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->groupBy('sv.id_shoe')
+            ->orderByRaw('SUM(sv.quantity_sold) DESC')->paginate(9);
 
         return response()->json($result);
     }
@@ -184,10 +178,10 @@ class ProductController extends RoutingController
             DB::raw('SUM(sv.quantity_stock) as stock'),
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
-        ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
-        ->where('shoe.id_category', Category::where('name_category', $category)->value('id_category'))
-        ->groupBy('sv.id_shoe')
-        ->paginate(9);
+            ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->where('shoe.id_category', Category::where('name_category', $category)->value('id_category'))
+            ->groupBy('sv.id_shoe')
+            ->paginate(9);
         return response()->json($result);
     }
 
@@ -198,27 +192,27 @@ class ProductController extends RoutingController
             DB::raw('SUM(sv.quantity_stock) as stock'),
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
-        ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
-        ->where('shoe.id_brand',Brand::where('name_brand', $brand)->value('id_brand'))
-        ->groupBy('sv.id_shoe')
-        ->paginate(9);
+            ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->where('shoe.id_brand', Brand::where('name_brand', $brand)->value('id_brand'))
+            ->groupBy('sv.id_shoe')
+            ->paginate(9);
         return response()->json($result);
     }
 
-    public function getProductsByPrice($p1 , $p2)
+    public function getProductsByPrice($p1, $p2)
     {
         $result = Shoe::select(
             'shoe.*',
             DB::raw('SUM(sv.quantity_stock) as stock'),
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
-        ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
-        ->whereBetween(DB::raw('CAST(price AS UNSIGNED)'), [(int)$p1, (int)$p2])
-        ->groupBy('sv.id_shoe')
-        ->paginate(9);
+            ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->whereBetween(DB::raw('CAST(price AS UNSIGNED)'), [(int)$p1, (int)$p2])
+            ->groupBy('sv.id_shoe')
+            ->paginate(9);
         return response()->json($result);
     }
-    
+
     public function getProductsSale($sale)
     {
         $result = Shoe::select(
@@ -226,10 +220,10 @@ class ProductController extends RoutingController
             DB::raw('SUM(sv.quantity_stock) as stock'),
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
-        ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
-        ->where('shoe.id_discount',Discount::where('discount_value', $sale)->value('id_discount'))
-        ->groupBy('sv.id_shoe')
-        ->paginate(12);
+            ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->where('shoe.id_discount', Discount::where('discount_value', $sale)->value('id_discount'))
+            ->groupBy('sv.id_shoe')
+            ->paginate(12);
         return response()->json($result);
     }
 
@@ -248,38 +242,38 @@ class ProductController extends RoutingController
             DB::raw('SUM(sv.quantity_stock) as stock'),
             DB::raw('SUM(sv.quantity_sold) as sold')
         )
-        ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
-        ->where('shoe.id_shoe', $id)
-        ->groupBy('sv.id_shoe')
-        ->first();
-         
-        $variants = ShoeVariant::where('id_shoe', $id)
-        ->get();
+            ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->where('shoe.id_shoe', $id)
+            ->groupBy('sv.id_shoe')
+            ->first();
 
-         //find similar shoes
-         $shoe = Shoe::find($id);
-         
+        $variants = ShoeVariant::where('id_shoe', $id)
+            ->get();
+
+        //find similar shoes
+        $shoe = Shoe::find($id);
+
+        $similarShoes = Shoe::select(
+            'shoe.*',
+            DB::raw('SUM(sv.quantity_stock) as stock'),
+            DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
+        )
+            ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->where('id_brand', $shoe->id_brand)->where('id_category', $shoe->id_category)
+            ->where('shoe.id_shoe', '!=', $shoe->id_shoe)->groupBy('sv.id_shoe')->get();
+        if ($similarShoes->count() === 0) {
             $similarShoes = Shoe::select(
                 'shoe.*',
                 DB::raw('SUM(sv.quantity_stock) as stock'),
                 DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
-            )
-            ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
-            ->where('id_brand', $shoe->id_brand)->where('id_category', $shoe->id_category)
-            ->where('shoe.id_shoe', '!=', $shoe->id_shoe)->groupBy('sv.id_shoe')->get();
-            if($similarShoes->count() === 0){
-                $similarShoes = Shoe::select(
-                    'shoe.*',
-                    DB::raw('SUM(sv.quantity_stock) as stock'),
-                    DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
 
-                )
+            )
                 ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
                 ->where('id_brand', $shoe->id_brand)->where('shoe.id_shoe', '!=', $shoe->id_shoe)
                 ->orWhere('id_category', $shoe->id_category)->where('shoe.id_shoe', '!=', $shoe->id_shoe)
                 ->groupBy('sv.id_shoe')->get();
-            }
-       
+        }
+
         return response()->json([
             'data' => $data,
             'variants' => $variants,
@@ -300,8 +294,8 @@ class ProductController extends RoutingController
 
         )
 
-        ->paginate(6);
+            ->paginate(6);
 
-    return response()->json($result);
+        return response()->json($result);
     }
 }

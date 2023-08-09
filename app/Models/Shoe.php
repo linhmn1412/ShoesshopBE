@@ -21,9 +21,7 @@ class Shoe extends Model
         'id_brand',
         'description',
         'price',
-        'image_1',
-        'image_2',
-        'image_3',
+        'image',
         'id_discount',
         'id_staff',
     ];
