@@ -5,68 +5,12 @@ namespace App\Http\Controllers\API\V1;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as RoutingController;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends RoutingController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
-
     public function login(Request $request)
     {
         $request->validate([
@@ -95,5 +39,31 @@ class AuthController extends RoutingController
         return response()->json(['user' => $user, 'access_token' => $token]);
     }
 
+    public function register (Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'fullname' => 'required',
+            'email' => 'required | email | unique:user',
+            'phone_number' => ['required', 'numeric', 'digits:10', 'unique:user'],
+            'username' => 'required | unique:user',
+            'password' => 'required | min:6 ',
+        ], [
+            'email.unique' => 'Email đã tồn tại.',
+            'username.unique' => 'Tên đăng nhập đã tồn tại.',
+            'phone_number.unique'=> 'Số điện thoại đã tồn tại.',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 201);
+        }
+        User::create([
+            'fullname' => $request->fullname,
+            'email' => $request->email,
+            'phone_number' => $request->phone_number,
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+            'id_role' => 3
+        ]);
+        return response()->json(['message' => 'Đăng ký tài khoản thành công'], 201);
+    }
     
 }

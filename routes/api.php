@@ -27,6 +27,7 @@ Route::group(['prefix' => 'v1'], function () {
     //auth
     
     Route::post('login', [AuthController::class, 'login'])->name('auth.login');
+    Route::post('register', [AuthController::class, 'register'])->name('auth.register');
 
 
     //product
@@ -75,17 +76,28 @@ Route::group(['prefix' => 'v1'], function () {
 
         //manage discount
         Route::get('/getAllDiscounts', [DiscountController::class, 'getAllDiscounts']);
+        Route::post('/discount/create', [DiscountController::class, 'store']);
+        Route::put('/discount/update', [DiscountController::class, 'update']);
+        Route::delete('/discount/delete', [DiscountController::class, 'destroy']);
 
         //manage category
         Route::get('/getAllCategories', [CategoryController::class, 'getAllCategories']);
+        Route::post('/category/create', [CategoryController::class, 'store']);
+        Route::put('/category/update', [CategoryController::class, 'update']);
+        Route::delete('/category/delete', [CategoryController::class, 'destroy']);
 
         //manage discount
         Route::get('/getAllBrands', [BrandController::class, 'getAllBrands']);
+        Route::post('/brand/create', [BrandController::class, 'store']);
+        Route::put('/brand/update', [BrandController::class, 'update']);
+        Route::delete('/brand/delete', [BrandController::class, 'destroy']);
 
         //manage products
         Route::get('/getAllProducts', [ProductController::class, 'getAllProductsAdmin']);
-        Route::post('/product/create', [ProductController::class, 'store']);
         Route::post('/product-create', [ProductController::class, 'createProduct']);
+        Route::put('/product-update', [ProductController::class, 'updateProduct']);
+        Route::delete('/product-delete', [ProductController::class, 'destroyProduct']);
+
 
 
         //review 

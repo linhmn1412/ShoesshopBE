@@ -19,22 +19,6 @@ use Mockery\Undefined;
 
 class ProductController extends RoutingController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function createProduct(Request $request)
     {
         $user = $request->user();
@@ -88,27 +72,38 @@ class ProductController extends RoutingController
         return response($imageContent)->header('Content-Type', 'image/jpeg');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+   
+    public function updateProduct(Request $request)
     {
-        //
-    }
+        $user = $request->user();
+         if ($user->id_role === 1 || $user->id_role === 2) {
+             try {
+                $product = Shoe::findOrFail($request->id_shoe);
+                $product->name_shoe = $request->name_shoe;
+                $product->id_category = $request->id_category;
+                $product->id_brand = $request->id_brand;
+                $product->description = $request->description;
+                $product->price = $request->price;
+                $product->id_discount = $request->id_discount;
+                if ($request->hasFile('image')) {
+                    $imageName = Str::random(32) . "." . $request->image->getClientOriginalExtension();
+                    Storage::disk('public')->put($imageName, file_get_contents($request->image));
+                    $product->image = $imageName;
+                }
+                $product->save();
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
+                 return response()->json([
+                     'message' => "Cập nhật sản phẩm thành công"
+                 ], 200);
+             } catch (\Exception $e) {
+                 return response()->json([
+                     'message' => "Tạo sản phẩm thất bại!"
+                 ], 500);
+             }
+         }
+         return response()->json([
+             'message' => "Người dùng không có quyền truy cập!"
+         ], 403);
     }
 
     /**
