@@ -24,5 +24,5 @@ public function customer()
     return $this->hasOne(Customer::class, 'id_customer', 'id_user');
 }
 
-    protected $fillable = ['point'];
+    protected $fillable = ['id_customer','point'];
 }

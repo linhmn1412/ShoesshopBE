@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API\V1;
 
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as RoutingController;
@@ -55,7 +56,7 @@ class AuthController extends RoutingController
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 201);
         }
-        User::create([
+        $user = User::create([
             'fullname' => $request->fullname,
             'email' => $request->email,
             'phone_number' => $request->phone_number,
@@ -63,7 +64,23 @@ class AuthController extends RoutingController
             'password' => Hash::make($request->password),
             'id_role' => 3
         ]);
+        if($user){
+            Customer::create([
+                'id_customer' => $user->id_user,
+                'point' => 0,
+            ]);
+        }
+        
+
         return response()->json(['message' => 'Đăng ký tài khoản thành công'], 201);
+    }
+
+    public function getAllStaffs (Request $request){
+        $user = $request->user();
+        if($user->id_role === 1){
+            $staffs = User::join('staff','staff.id_staff','=','id_user')->paginate(6);
+            return response()->json($staffs);
+        }
     }
     
 }

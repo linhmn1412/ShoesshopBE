@@ -95,13 +95,22 @@ Route::group(['prefix' => 'v1'], function () {
         //manage products
         Route::get('/getAllProducts', [ProductController::class, 'getAllProductsAdmin']);
         Route::post('/product-create', [ProductController::class, 'createProduct']);
-        Route::put('/product-update', [ProductController::class, 'updateProduct']);
-        Route::delete('/product-delete', [ProductController::class, 'destroyProduct']);
+        Route::post('/product/{id}/update', [ProductController::class, 'updateShoe']);
+        Route::delete('/product/{id}/delete', [ProductController::class, 'destroy']);
 
-
+        //manage staffs
+        Route::get('/getAllStaffs', [AuthController::class, 'getAllStaffs']);
+        Route::post('/staff/create', [BrandController::class, 'store']);
+        Route::put('/staff/update', [BrandController::class, 'update']);
+        Route::delete('/staff/delete', [BrandController::class, 'destroy']);
 
         //review 
         Route::post('/reviews/create', [ReviewController::class, 'store']);
+         
+        //statistics
+        Route::get('/top5-selling-products',  [ProductController::class, 'topSellingProducts']);
+        Route::get('/revenue-statistics',  [ProductController::class, 'revenueStatistics']);
+
 
     });
   

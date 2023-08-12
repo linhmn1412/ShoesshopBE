@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\API\V1;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ProductStoreRequest;
+
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Discount;
-use App\Models\Review;
 use App\Models\Shoe;
 use App\Models\ShoeVariant;
 use Illuminate\Http\Request;
@@ -15,7 +13,6 @@ use Illuminate\Routing\Controller as RoutingController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Mockery\Undefined;
 
 class ProductController extends RoutingController
 {
@@ -72,39 +69,62 @@ class ProductController extends RoutingController
         return response($imageContent)->header('Content-Type', 'image/jpeg');
     }
 
-   
-    public function updateProduct(Request $request)
-    {
-        $user = $request->user();
-         if ($user->id_role === 1 || $user->id_role === 2) {
-             try {
-                $product = Shoe::findOrFail($request->id_shoe);
-                $product->name_shoe = $request->name_shoe;
-                $product->id_category = $request->id_category;
-                $product->id_brand = $request->id_brand;
-                $product->description = $request->description;
-                $product->price = $request->price;
-                $product->id_discount = $request->id_discount;
-                if ($request->hasFile('image')) {
-                    $imageName = Str::random(32) . "." . $request->image->getClientOriginalExtension();
-                    Storage::disk('public')->put($imageName, file_get_contents($request->image));
-                    $product->image = $imageName;
-                }
-                $product->save();
 
-                 return response()->json([
-                     'message' => "Cập nhật sản phẩm thành công"
-                 ], 200);
-             } catch (\Exception $e) {
-                 return response()->json([
-                     'message' => "Tạo sản phẩm thất bại!"
-                 ], 500);
-             }
-         }
-         return response()->json([
-             'message' => "Người dùng không có quyền truy cập!"
-         ], 403);
+public function updateShoe(Request $request, $id)
+{
+    $user = $request->user();
+    if ($user->id_role === 1 || $user->id_role === 2) {
+            $product = Shoe::find($id);
+
+            if (!$product) {
+                return response()->json([
+                    'message' => 'Sản phẩm không tồn tại'
+                ], 404);
+            }
+            $imageName = $product->image;
+            if ($request->hasFile('image')) {
+                $uploadedFile = $request->file('image');
+                $imageName = Str::random(32) . "." . $uploadedFile->getClientOriginalExtension();
+                // Storage::disk('public')->put($imageName, file_get_contents($uploadedFile));
+                Storage::disk('public')->put($imageName, file_get_contents($uploadedFile));
+               
+            }
+        //     $product['name_shoe'] = $request->name_shoe;
+        //     $product['id_category'] = $request->id_category;
+        //     $product['id_brand'] = $request->id_brand;
+        //     $product['description'] = $request->description;
+        //     $product['price'] = $request->price;
+        //    // $product['image'] = $imageName;
+        //     $product['id_discount'] = $request->id_discount;
+        //     $product['id_staff'] = $user->id_user;
+
+          
+
+        //     $product->save();
+        
+            Shoe::where('id_shoe', $id)->update([
+                'name_shoe' => $request->input('name_shoe'),
+                 'id_category' => $request->id_category,
+                'id_brand' => $request->id_brand,
+                'description' => $request->description,
+                'price' => $request->price,
+            
+               'image' => $imageName  ,
+                'id_discount' => $request->id_discount,
+                'id_staff' => $user->id_user,
+                
+            ]);
+
+            return response()->json([
+                'message' => "Cập nhật sản phẩm thành công"
+            ], 200);
+      
+         
     }
+    return response()->json([
+        'message' => "Người dùng không có quyền truy cập!"
+    ], 403);
+}
 
     /**
      * Remove the specified resource from storage.
@@ -114,7 +134,26 @@ class ProductController extends RoutingController
      */
     public function destroy($id)
     {
-        //
+        try {
+            $product = Shoe::findOrFail($id);
+    
+            // Kiểm tra xem sản phẩm có tồn tại trong ShoeVariant không
+            $shoeVariant = DB::table('shoevariant')->where('id_shoe', $id)->first();
+    
+            if ($shoeVariant) {
+                return response()->json([
+                    'message' => 'Không thể xóa sản phẩm vì đã bán hoặc còn tồn kho'
+                ], 201);
+            }
+            $product->delete();
+            return response()->json([
+                'message' => 'Xóa sản phẩm thành công'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Xóa sản phẩm thất bại'
+            ], 202);
+        }
     }
 
     public function getAllProducts()
@@ -292,5 +331,35 @@ class ProductController extends RoutingController
             ->paginate(6);
 
         return response()->json($result);
+    }
+
+    public function revenueStatistics (Request $request){
+       
+    }
+    public function topSellingProducts (Request $request){
+        try {
+            $year = $request->query('year', now()->year);
+            $month = $request->query('month', now()->month);
+    
+            $topSellingProducts = DB::table('orderdetail')
+                ->select('shoe.name_shoe', 'shoe.id_shoe', DB::raw('SUM(orderdetail.quantity) as total_quantity'))
+                ->join('order', 'orderdetail.id_order', '=', 'order.id_order')
+                ->join('shoevariant', 'orderdetail.id_variant', '=', 'shoevariant.id_variant')
+                ->join('shoe', 'shoevariant.id_shoe', '=', 'shoe.id_shoe')
+                ->whereYear('order.created_at', $year)
+                ->whereMonth('order.created_at', $month)
+                ->groupBy('shoe.id_shoe')
+                ->orderByDesc('total_quantity')
+                ->take(5)
+                ->get();
+    
+            return response()->json([
+                'top_selling_products' => $topSellingProducts
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Lỗi khi truy vấn thông kế'
+            ], 500);
+        }
     }
 }
