@@ -100,9 +100,8 @@ Route::group(['prefix' => 'v1'], function () {
 
         //manage staffs
         Route::get('/getAllStaffs', [AuthController::class, 'getAllStaffs']);
-        Route::post('/staff/create', [BrandController::class, 'store']);
-        Route::put('/staff/update', [BrandController::class, 'update']);
-        Route::delete('/staff/delete', [BrandController::class, 'destroy']);
+        Route::put('/staff/update', [AuthController::class, 'updateStaff']);
+        Route::put('/account/update', [AuthController::class, 'updateAccount']);
 
         //review 
         Route::post('/reviews/create', [ReviewController::class, 'store']);

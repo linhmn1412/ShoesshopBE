@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\API\V1;
 
 use App\Models\Customer;
+use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as RoutingController;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -56,20 +58,38 @@ class AuthController extends RoutingController
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 201);
         }
-        $user = User::create([
-            'fullname' => $request->fullname,
-            'email' => $request->email,
-            'phone_number' => $request->phone_number,
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'id_role' => 3
-        ]);
-        if($user){
-            Customer::create([
-                'id_customer' => $user->id_user,
-                'point' => 0,
+        if($request->user() && $request->user()->id_role === 1){
+            $user = User::create([
+                'fullname' => $request->fullname,
+                'email' => $request->email,
+                'phone_number' => $request->phone_number,
+                'username' => $request->username,
+                'password' => Hash::make($request->password),
+                'id_role' => 2
             ]);
+            if($user){
+                Staff::create([
+                    'id_staff' => $user->id_user,
+                    'status' => true,
+                ]);
+            }
+        }else{
+            $user = User::create([
+                'fullname' => $request->fullname,
+                'email' => $request->email,
+                'phone_number' => $request->phone_number,
+                'username' => $request->username,
+                'password' => Hash::make($request->password),
+                'id_role' => 3
+            ]);
+            if($user){
+                Customer::create([
+                    'id_customer' => $user->id_user,
+                    'point' => 0,
+                ]);
+            }
         }
+        
         
 
         return response()->json(['message' => 'Đăng ký tài khoản thành công'], 201);
@@ -81,6 +101,18 @@ class AuthController extends RoutingController
             $staffs = User::join('staff','staff.id_staff','=','id_user')->paginate(6);
             return response()->json($staffs);
         }
+    }
+
+    public function updateStaff (Request $request) {
+        $user = $request->user();
+        if($user->id_role === 1){
+            Staff::where('id_staff', $request->id_staff)->update([
+                'salary' => $request->salary,
+                'status' => $request->status
+            ]);
+            return response()->json(['message' => 'Cập nhật tài khoản nhân viên thành công'], 200);
+        }
+        
     }
     
 }

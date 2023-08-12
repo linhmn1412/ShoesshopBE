@@ -123,7 +123,7 @@ class OrderController extends RoutingController
     public function getOrderPending (Request $request){
         $user = $request->user();
         if($user->id_role === 1 || $user->id_role === 2){
-            $order = Order::with('orderDetails')->where('status','Chờ xác nhận')->paginate(6);
+            $order = Order::with('orderDetails')->where('status','Chờ xác nhận')->paginate(10);
             return response()->json($order);
         }
         return response()->json(["Message"=>"Người dùng không có quyền xem"]);
@@ -133,7 +133,7 @@ class OrderController extends RoutingController
     public function getAllOrders (Request $request){
         $user = $request->user();
         if($user->id_role === 1 || $user->id_role === 2){
-            $orders = Order::with('orderDetails')->orderBy('created_at', 'desc')->paginate(6);
+            $orders = Order::with('orderDetails')->orderBy('created_at', 'desc')->paginate(10);
 
             $transformedOrders = $orders->map(function ($order) {
                 $orderData = $order->toArray();

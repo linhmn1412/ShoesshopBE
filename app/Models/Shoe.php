@@ -14,7 +14,13 @@ class Shoe extends Model
     protected $primaryKey = "id_shoe";
 
     public $timestamps = true;
-
+    public function variants()
+    {
+        return $this->hasMany(ShoeVariant::class, 'id_shoe');
+    }
+    protected $casts = [
+        'status' => 'boolean',
+    ];
     protected $fillable = [
         'name_shoe',
         'id_category',
@@ -24,5 +30,6 @@ class Shoe extends Model
         'image',
         'id_discount',
         'id_staff',
+        'status',
     ];
 }

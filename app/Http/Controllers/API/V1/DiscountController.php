@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\V1;
 
 use App\Models\Discount;
+use App\Models\Shoe;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as RoutingController;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +32,13 @@ class DiscountController extends RoutingController
      */
     public function store(Request $request)
     {
-        //
+        $user = $request->user();
+        Discount::create([
+            'name_discount' => $request->name_discount,
+            'discount_value' => $request->discount_value,
+            'id_staff' => $user->id_user,
+        ]);
+        return response()->json(["message" => "Thêm khuyến mãi thành công"]);
     }
 
     /**
@@ -52,9 +59,15 @@ class DiscountController extends RoutingController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $user = $request->user();
+        Discount::where('id_discount', $request->id_discount)->update([
+            'name_discount' => $request->name_discount,
+            'discount_value' => $request->discount_value,
+            'id_staff' => $user->id_user,
+        ]);
+        return response()->json(["message" => "Cập nhật khuyến mãi thành công"]);
     }
 
     /**
@@ -63,9 +76,26 @@ class DiscountController extends RoutingController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request)
     {
-        //
+        try {
+            $discount = Discount::findOrFail($request->id_discount);
+            $product = Shoe::where('id_discount', $request->id_discount)->first();
+    
+            if ($product) {
+                return response()->json([
+                    'message' => 'Không thể xóa khuyến mãi vì đã có sản phẩm sử dụng'
+                ], 201);
+            }
+            $discount->delete();
+            return response()->json([
+                'message' => 'Xóa khuyến mãi thành công'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Xóa khuyến mãi thất bại'
+            ], 202);
+        }
     }
 
     public function getAllDiscounts(Request $request)
@@ -75,7 +105,7 @@ class DiscountController extends RoutingController
             $discounts = Discount::select(
                 'discount.*',
                 DB::raw('(select fullname from user where user.id_user = discount.id_staff) as name_staff'),
-            )->paginate(6);
+            )->paginate(10);
             $allDiscounts = Discount::get();
             $response = [
                 'data' => $discounts->items(),

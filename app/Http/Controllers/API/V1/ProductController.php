@@ -23,7 +23,7 @@ class ProductController extends RoutingController
         if ($user->id_role === 1 || $user->id_role === 2) {
             try {
                 $imageName = Str::random(32) . "." . $request->image->getClientOriginalExtension();
-                Shoe::create([
+                $shoe = Shoe::create([
                     'name_shoe' => $request->name_shoe,
                     'id_category' => $request->id_category,
                     'id_brand' => $request->id_brand,
@@ -32,10 +32,21 @@ class ProductController extends RoutingController
                     'image' => $imageName,
                     'id_discount' => $request->id_discount,
                     'id_staff' => $user->id_user,
+                    'status' => true,
                 ]);
                 // Save Image in Storage folder
                 Storage::disk('public')->put($imageName, file_get_contents($request->image));
-                // Return Json Response
+                
+                $variants = json_decode($request->input('data'), true);
+                foreach ($variants as $variant) {
+                    ShoeVariant::create([
+                        'id_shoe' => $shoe->id_shoe,
+                        'color' => $variant['color'],
+                        'size' => $variant['size'],
+                        'quantity_stock' => $variant['quantity_stock'],
+                        'quantity_sold' => 0,
+                    ]);
+                } 
                 return response()->json([
                     'message' => "Thêm sản phẩm thành công"
                 ], 200);
@@ -170,6 +181,7 @@ public function updateShoe(Request $request, $id)
 
         )
             ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->where("shoe.status",true)
             ->groupBy('sv.id_shoe')
             ->paginate(9);
 
@@ -183,6 +195,7 @@ public function updateShoe(Request $request, $id)
             DB::raw('SUM(sv.quantity_stock) as stock'),
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
+            ->where("shoe.status",true)
             ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
             ->groupBy('sv.id_shoe')
             ->orderBy('created_at', 'desc')->paginate(9);
@@ -197,6 +210,7 @@ public function updateShoe(Request $request, $id)
             DB::raw('SUM(sv.quantity_stock) as stock'),
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
+            ->where("shoe.status",true)
             ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
             ->groupBy('sv.id_shoe')
             ->orderByRaw('SUM(sv.quantity_sold) DESC')->paginate(9);
@@ -212,6 +226,7 @@ public function updateShoe(Request $request, $id)
             DB::raw('SUM(sv.quantity_stock) as stock'),
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
+            ->where("shoe.status",true)
             ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
             ->where('shoe.id_category', Category::where('name_category', $category)->value('id_category'))
             ->groupBy('sv.id_shoe')
@@ -227,6 +242,7 @@ public function updateShoe(Request $request, $id)
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
             ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->where("shoe.status",true)
             ->where('shoe.id_brand', Brand::where('name_brand', $brand)->value('id_brand'))
             ->groupBy('sv.id_shoe')
             ->paginate(9);
@@ -241,6 +257,7 @@ public function updateShoe(Request $request, $id)
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
             ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->where("shoe.status",true)
             ->whereBetween(DB::raw('CAST(price AS UNSIGNED)'), [(int)$p1, (int)$p2])
             ->groupBy('sv.id_shoe')
             ->paginate(9);
@@ -255,6 +272,7 @@ public function updateShoe(Request $request, $id)
             DB::raw('(SELECT discount_value FROM discount WHERE id_discount = shoe.id_discount) as discount_value'),
         )
             ->join('shoevariant as sv', 'shoe.id_shoe', '=', 'sv.id_shoe')
+            ->where("shoe.status",true)
             ->where('shoe.id_discount', Discount::where('discount_value', $sale)->value('id_discount'))
             ->groupBy('sv.id_shoe')
             ->paginate(12);
@@ -326,15 +344,22 @@ public function updateShoe(Request $request, $id)
             DB::raw('(SELECT name_brand FROM brand WHERE id_brand = shoe.id_brand) as name_brand'),
             DB::raw('(select fullname from user where user.id_user = shoe.id_staff) as name_staff'),
 
-        )
-
-            ->paginate(6);
+        )->with(['variants' => function ($query) {
+            $query->select('id_variant', 'id_shoe', 'color', 'size', 'quantity_stock', 'quantity_sold');
+        }])->paginate(10);
 
         return response()->json($result);
     }
 
     public function revenueStatistics (Request $request){
-       
+        $revenueByMonth = DB::table('order')
+        ->select(DB::raw('MONTH(created_at) as month'), DB::raw('SUM(total) as total_revenue'))
+        ->where('status', 'Đã xác nhận')->orWhere('status', 'Hoàn thành')
+        ->groupBy(DB::raw('MONTH(created_at)'))
+        ->orderBy(DB::raw('MONTH(created_at)'))
+        ->get();
+
+    return response()->json($revenueByMonth);
     }
     public function topSellingProducts (Request $request){
         try {
@@ -346,11 +371,12 @@ public function updateShoe(Request $request, $id)
                 ->join('order', 'orderdetail.id_order', '=', 'order.id_order')
                 ->join('shoevariant', 'orderdetail.id_variant', '=', 'shoevariant.id_variant')
                 ->join('shoe', 'shoevariant.id_shoe', '=', 'shoe.id_shoe')
-                ->whereYear('order.created_at', $year)
-                ->whereMonth('order.created_at', $month)
+                ->where('order.status', 'Đã xác nhận')->orWhere('order.status', 'Hoàn thành')
+                ->whereYear('order.created_at',"=", date('Y'))
+                ->whereMonth('order.created_at',"=", date('m'))
                 ->groupBy('shoe.id_shoe')
                 ->orderByDesc('total_quantity')
-                ->take(5)
+                ->take(10)
                 ->get();
     
             return response()->json([

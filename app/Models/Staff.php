@@ -13,6 +13,9 @@ class Staff extends Model
     protected $primaryKey = "id_staff";
 
     public $timestamps = false;
+    protected $casts = [
+        'status' => 'boolean',
+    ];
 
     protected $fillable = ['salary','status'];
 }
