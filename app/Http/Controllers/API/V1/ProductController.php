@@ -166,6 +166,30 @@ public function updateShoe(Request $request, $id)
             ], 202);
         }
     }
+ 
+    public function destroyVariant($id)
+    {
+        try {
+            $variant = ShoeVariant::findOrFail($id);
+    
+            // Kiểm tra xem sản phẩm có tồn tại trong ShoeVariant không
+            $orderDetail = DB::table('orderdetail')->where('id_variant', $id)->first();
+    
+            if ($orderDetail) {
+                return response()->json([
+                    'message' => 'Không thể xóa biến thể này vì đã bán.'
+                ], 201);
+            }
+            $variant->delete();
+            return response()->json([
+                'message' => 'Xóa biến thể sản phẩm thành công'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Xóa biến thể sản phẩm thất bại'
+            ], 202);
+        }
+    }
 
     public function getAllProducts()
     {

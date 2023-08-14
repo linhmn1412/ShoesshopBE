@@ -156,32 +156,31 @@ class OrderController extends RoutingController
             return response()->json($orders);     
     }
 
-    public function approveOrder (Request $request){
+    public function confirmOrder (Request $request, $id){
         $user = $request->user();
         if($user->id_role=== 1 || $user->id_role === 2){
-            $order = Order::find($request->id_order);
+            $order = Order::find($id);
             if(!$order){
-                return response()->json(["message"=>"Không tìm thấy đơn hàng"]);
+                return response()->json(["message"=>"Không tìm thấy đơn hàng"],202);
             }
             if($order->status === "Đã xác nhận")
             {
-                return response()->json(["message"=>"Đơn hàng đã được xác nhận trước đó."]);
+                return response()->json(["message"=>"Đơn hàng đã được xác nhận trước đó."],201);
 
             }
             $order->update(['status' => 'Đã xác nhận',
             'id_staff' => $user->id_user]);
-            return response()->json(["message"=> "Đơn hàng đã duyệt thành công"]);
+            return response()->json(["message"=> "Đơn hàng đã duyệt thành công"],200);
         }
-        return response()->json(["message"=>"Người dùng không có quyền duyệt"]);
-        
+        return response()->json(["message"=>"Người dùng không có quyền duyệt"],400);
     }
 
-    public function cancelOrder (Request $request){
+    public function cancelOrder (Request $request, $id){
         $user = $request->user();
      
-            $order = Order::find($request->id_order);
+            $order = Order::find($id);
             if(!$order){
-                return response()->json(["message"=>"Không tìm thấy đơn hàng"]);
+                return response()->json(["message"=>"Không tìm thấy đơn hàng"],202);
             }
             if($order->status === "Chờ xác nhận");
             {
@@ -194,29 +193,27 @@ class OrderController extends RoutingController
                         $variant->save();
                     }
                 }
-                return response()->json(["message"=> "Đơn hàng đã hủy thành công"]);
+                return response()->json(["message"=> "Đơn hàng đã hủy thành công"],200);
 
             }
-            return response()->json(["message"=>"Đơn hàng không thể hủy"]);
+            return response()->json(["message"=>"Đơn hàng không thể hủy"],201);
       
         
     }
 
-    public function receiveOrder (Request $request){
+    public function receiveOrder (Request $request, $id){
         $user = $request->user();
      
-            $order = Order::find($request->id_order);
+            $order = Order::find($id);
             if(!$order){
-                return response()->json(["message"=>"Không tìm thấy đơn hàng"]);
+                return response()->json(["message"=>"Không tìm thấy đơn hàng"],202);
             }
             if($order->status === "Đã xác nhận");
             {
                 $order->update(['status' => 'Hoàn thành']);
-                return response()->json(["message"=> "Đơn hàng hoàn tất, hãy cho nhận xét về đơn hàng!"]);
+                return response()->json(["message"=> "Đơn hàng hoàn tất, hãy cho nhận xét về đơn hàng!"],200);
 
             }
-            return response()->json(["message"=>"Đơn hàng không thể cập nhật"]);
-      
-        
+            return response()->json(["message"=>"Đơn hàng không thể cập nhật"],201);
     }
 }

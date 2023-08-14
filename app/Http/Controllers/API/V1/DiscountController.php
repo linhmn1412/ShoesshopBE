@@ -34,7 +34,7 @@ class DiscountController extends RoutingController
     {
         $user = $request->user();
         Discount::create([
-            'name_discount' => $request->name_discount,
+            'name_discount' => $request->name,
             'discount_value' => $request->discount_value,
             'id_staff' => $user->id_user,
         ]);
@@ -59,15 +59,15 @@ class DiscountController extends RoutingController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
         $user = $request->user();
-        Discount::where('id_discount', $request->id_discount)->update([
-            'name_discount' => $request->name_discount,
+        Discount::where('id_discount', $id)->update([
+            'name_discount' => $request->name,
             'discount_value' => $request->discount_value,
             'id_staff' => $user->id_user,
         ]);
-        return response()->json(["message" => "Cập nhật khuyến mãi thành công"]);
+        return response()->json(["message" => "Cập nhật khuyến mãi thành công"],200);
     }
 
     /**
@@ -76,11 +76,11 @@ class DiscountController extends RoutingController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request)
+    public function destroy(Request $request,$id)
     {
         try {
-            $discount = Discount::findOrFail($request->id_discount);
-            $product = Shoe::where('id_discount', $request->id_discount)->first();
+            $discount = Discount::findOrFail($id);
+            $product = Shoe::where('id_discount', $id)->first();
     
             if ($product) {
                 return response()->json([

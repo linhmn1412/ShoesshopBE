@@ -49,23 +49,19 @@ class CartItemController extends RoutingController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(Request $request,$id)
     {
-        $request->validate([
-            'id_variant' => 'required|integer',
-            'quantity' => 'required|integer|min:1',
-        ]);
         $user = $request->user();
         $id_customer = $user->id_user;
         $quantity = $request->quantity;
-        $cartItem = CartItem::where('id_variant', $request->id_variant)
+        $cartItem = CartItem::where('id_variant', $id)
             ->where('id_customer', $id_customer)
             ->first();
         if ($cartItem) {
-            CartItem::where('id_variant', $request->id_variant)
+            CartItem::where('id_variant', $id)
                 ->where('id_customer', $id_customer)
                 ->update(['quantity' => $quantity]);
-            return response()->json(['message' => 'Cập nhật sản phẩm trong giỏ hàng thành công']);
+            return response()->json(['message' => 'Cập nhật sản phẩm trong giỏ hàng thành công'],200);
         }
         return response()->json(['message' => 'Sản phẩm không tồn tại']);
     }
@@ -75,16 +71,16 @@ class CartItemController extends RoutingController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request)
+    public function destroy(Request $request, $id)
     {
         $user = $request->user();
         $id_customer = $user->id_user;
         $deletedRows = CartItem::where('id_customer', $id_customer)
-                               ->where('id_variant',  $request->id_variant)
+                               ->where('id_variant',  $id)
                                ->delete();
 
         if ($deletedRows === 0) {
-            return response()->json(['message' => 'Xóa sản phẩm thất bại'], 404);
+            return response()->json(['message' => 'Xóa sản phẩm thất bại'], 201);
         }
 
         return response()->json(['message' => 'Sản phẩm đã xóa khỏi giỏ hàng'], 200);

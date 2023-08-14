@@ -17,5 +17,5 @@ class Staff extends Model
         'status' => 'boolean',
     ];
 
-    protected $fillable = ['salary','status'];
+    protected $fillable = ["id_staff",'salary','status'];
 }

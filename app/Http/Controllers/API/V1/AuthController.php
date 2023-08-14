@@ -58,22 +58,7 @@ class AuthController extends RoutingController
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 201);
         }
-        if($request->user() && $request->user()->id_role === 1){
-            $user = User::create([
-                'fullname' => $request->fullname,
-                'email' => $request->email,
-                'phone_number' => $request->phone_number,
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
-                'id_role' => 2
-            ]);
-            if($user){
-                Staff::create([
-                    'id_staff' => $user->id_user,
-                    'status' => true,
-                ]);
-            }
-        }else{
+     
             $user = User::create([
                 'fullname' => $request->fullname,
                 'email' => $request->email,
@@ -88,7 +73,7 @@ class AuthController extends RoutingController
                     'point' => 0,
                 ]);
             }
-        }
+    
         
         
 
@@ -103,10 +88,47 @@ class AuthController extends RoutingController
         }
     }
 
-    public function updateStaff (Request $request) {
+    public function createStaff (Request $request)
+    {
+        $admin = $request->user();
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required | email | unique:user',
+            'phone_number' => ['required', 'numeric', 'digits:10', 'unique:user'],
+            'username' => 'required | unique:user',
+            'password' => 'required | min:6 ',
+        ], [
+            'email.unique' => 'Email đã tồn tại.',
+            'username.unique' => 'Tên đăng nhập đã tồn tại.',
+            'phone_number.unique'=> 'Số điện thoại đã tồn tại.',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 201);
+        }
+        if($admin->id_role === 1){
+            $user = User::create([
+                'fullname' => $request->name,
+                'email' => $request->email,
+                'phone_number' => $request->phone_number,
+                'username' => $request->username,
+                'password' => Hash::make($request->password),
+                'id_role' => 2
+            ]);
+            if($user){
+                Staff::create([
+                    'id_staff' => $user->id_user,
+                    'status' => true,
+                ]);
+            }
+            return response()->json(['message' => 'Đăng ký tài khoản thành công'], 200);
+        }
+        return response()->json(['message' => 'Nguời dùng không có quyền truy cập'], 202);
+    }
+
+    public function updateStaff (Request $request, $id) {
         $user = $request->user();
         if($user->id_role === 1){
-            Staff::where('id_staff', $request->id_staff)->update([
+            Staff::where('id_staff', $id)->update([
                 'salary' => $request->salary,
                 'status' => $request->status
             ]);

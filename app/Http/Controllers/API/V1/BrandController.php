@@ -35,7 +35,7 @@ class BrandController extends RoutingController
     {
         $user = $request->user();
         Brand::create([
-            'name_brand' => $request->name_brand,
+            'name_brand' => $request->name,
             'id_staff' => $user->id_user,
         ]);
         return response()->json(["message" => "Thêm thương hiệu thành công"]);
@@ -59,11 +59,11 @@ class BrandController extends RoutingController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
         $user = $request->user();
-        Brand::where('id_brand', $request->id_brand)->update([
-            'name_brand' => $request->name_brand,
+        Brand::where('id_brand', $id)->update([
+            'name_brand' => $request->name,
             'id_staff' => $user->id_user,
         ]);
         return response()->json(["message" => "Cập nhật thương hiệu thành công"]);
@@ -75,11 +75,11 @@ class BrandController extends RoutingController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request )
+    public function destroy(Request $request, $id )
     {
         try {
-            $brand = Brand::findOrFail($request->id_brand);
-            $product = Shoe::where('id_brand', $request->id_brand)->first();
+            $brand = Brand::findOrFail($id);
+            $product = Shoe::where('id_brand', $id)->first();
     
             if ($product) {
                 return response()->json([

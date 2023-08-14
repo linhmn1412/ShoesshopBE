@@ -35,7 +35,7 @@ class CategoryController extends RoutingController
     {
         $user = $request->user();
         Category::create([
-            'name_category' => $request->name_category,
+            'name_category' => $request->name,
             'id_staff' => $user->id_user,
         ]);
         return response()->json(["message" => "Thêm danh mục thành công"]);
@@ -59,14 +59,14 @@ class CategoryController extends RoutingController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(Request $request , $id)
     {
         $user = $request->user();
-        Category::where('id_category', $request->id_category)->update([
-            'name_catgory' => $request->name_catgory,
+        Category::where('id_category', $id)->update([
+            'name_catgory' => $request->name,
             'id_staff' => $user->id_user,
         ]);
-        return response()->json(["message" => "Cập nhật danh mục thành công"]);
+        return response()->json(["message" => "Cập nhật danh mục thành công"],200);
     }
 
     /**
@@ -75,11 +75,13 @@ class CategoryController extends RoutingController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request )
-    {
+    public function destroy(Request $request, $id )
+    {  
+        $user = $request->user();
+        if($user->id_role === 1 || $user->id_role === 2 ){
         try {
-            $category = Category::findOrFail($request->id_category);
-            $product = Shoe::where('id_category', $request->id_category)->first();
+            $category = Category::findOrFail($id);
+            $product = Shoe::where('id_category', $id)->first();
     
             if ($product) {
                 return response()->json([
@@ -95,6 +97,7 @@ class CategoryController extends RoutingController
                 'message' => 'Xóa danh mục thất bại.'
             ], 202);
         }
+    }
     }
 
     public function getAllCategories(Request $request)

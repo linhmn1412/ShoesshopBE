@@ -62,46 +62,48 @@ Route::group(['prefix' => 'v1'], function () {
         Route::get('/getCartItemByUser', [CartItemController::class, 'getCartItemByUser']);
         // manage cart_item
         Route::post('/addToCart', [CartItemController::class, 'addToCart']);
-        Route::post('/updateCartItem', [CartItemController::class, 'update']);
-        Route::post('/removeCartItem', [CartItemController::class, 'destroy']);
+        Route::post('/cartItem/{id}/update', [CartItemController::class, 'update']);
+        Route::delete('/cartItem/{id}/delete', [CartItemController::class, 'destroy']);
 
         //manage order
         Route::post('/order/create', [OrderController::class, 'store']);
         Route::get('/getOrderPending', [OrderController::class, 'getOrderPending']);
         Route::get('/getAllOrders', [OrderController::class, 'getAllOrders']);
-        Route::put('/order/approve', [OrderController::class, 'approveOrder']);
-        Route::put('/order/cancel', [OrderController::class, 'cancelOrder']);
-        Route::put('/order/receive', [OrderController::class, 'receiveOrder']);
+        Route::put('/order/{id}/confirm', [OrderController::class, 'confirmOrder']);
+        Route::put('/order/{id}/cancel', [OrderController::class, 'cancelOrder']);
+        Route::put('/order/{id}/receive', [OrderController::class, 'receiveOrder']);
         Route::get('/getOrdersByUser', [OrderController::class, 'getOrdersByUser']);
 
         //manage discount
         Route::get('/getAllDiscounts', [DiscountController::class, 'getAllDiscounts']);
         Route::post('/discount/create', [DiscountController::class, 'store']);
-        Route::put('/discount/update', [DiscountController::class, 'update']);
-        Route::delete('/discount/delete', [DiscountController::class, 'destroy']);
+        Route::put('/discount/{id}/update', [DiscountController::class, 'update']);
+        Route::delete('/discount/{id}/delete', [DiscountController::class, 'destroy']);
 
         //manage category
         Route::get('/getAllCategories', [CategoryController::class, 'getAllCategories']);
         Route::post('/category/create', [CategoryController::class, 'store']);
-        Route::put('/category/update', [CategoryController::class, 'update']);
-        Route::delete('/category/delete', [CategoryController::class, 'destroy']);
+        Route::put('/category/{id}/update', [CategoryController::class, 'update']);
+        Route::delete('/category/{id}/delete', [CategoryController::class, 'destroy']);
 
         //manage discount
         Route::get('/getAllBrands', [BrandController::class, 'getAllBrands']);
         Route::post('/brand/create', [BrandController::class, 'store']);
-        Route::put('/brand/update', [BrandController::class, 'update']);
-        Route::delete('/brand/delete', [BrandController::class, 'destroy']);
+        Route::put('/brand/{id}/update', [BrandController::class, 'update']);
+        Route::delete('/brand/{id}/delete', [BrandController::class, 'destroy']);
 
         //manage products
         Route::get('/getAllProducts', [ProductController::class, 'getAllProductsAdmin']);
         Route::post('/product-create', [ProductController::class, 'createProduct']);
         Route::post('/product/{id}/update', [ProductController::class, 'updateShoe']);
         Route::delete('/product/{id}/delete', [ProductController::class, 'destroy']);
+        Route::delete('/product-variant/{id}/delete', [ProductController::class, 'destroyVariant']);
 
         //manage staffs
         Route::get('/getAllStaffs', [AuthController::class, 'getAllStaffs']);
-        Route::put('/staff/update', [AuthController::class, 'updateStaff']);
-        Route::put('/account/update', [AuthController::class, 'updateAccount']);
+        Route::post('/staff/create', [AuthController::class, 'createStaff']);
+        Route::put('/staff/{id}/update', [AuthController::class, 'updateStaff']);
+        Route::put('/account/{id}/update', [AuthController::class, 'updateAccount']);
 
         //review 
         Route::post('/reviews/create', [ReviewController::class, 'store']);
