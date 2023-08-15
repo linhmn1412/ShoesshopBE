@@ -94,10 +94,13 @@ Route::group(['prefix' => 'v1'], function () {
 
         //manage products
         Route::get('/getAllProducts', [ProductController::class, 'getAllProductsAdmin']);
+        Route::get('/getVariants/{id}', [ProductController::class, 'getVariantsByIdProduct']);
         Route::post('/product-create', [ProductController::class, 'createProduct']);
         Route::post('/product/{id}/update', [ProductController::class, 'updateShoe']);
         Route::delete('/product/{id}/delete', [ProductController::class, 'destroy']);
-        Route::delete('/product-variant/{id}/delete', [ProductController::class, 'destroyVariant']);
+        Route::post('/product/{id}/variant/create', [ProductController::class, 'createVariant']);
+        Route::put('/product-variant/{id}/update', [ProductController::class, 'updateVariant']);
+        Route::delete('/product-variant/{id}delete', [ProductController::class, 'destroyVariant']);
 
         //manage staffs
         Route::get('/getAllStaffs', [AuthController::class, 'getAllStaffs']);

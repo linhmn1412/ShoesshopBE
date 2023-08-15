@@ -137,6 +137,61 @@ public function updateShoe(Request $request, $id)
     ], 403);
 }
 
+public function createVariant(Request $request, $id)
+{
+    $user = $request->user();
+    if ($user->id_role === 1 || $user->id_role === 2) {
+        $variant = ShoeVariant::where('id_shoe', $id)->where('color', $request->color)->where('size', $request->size)->first();
+        if ($variant) {
+            ShoeVariant::where('id_shoe', $id)
+            ->where('color', $request->color)
+            ->where('size', $request->size)
+            ->increment('quantity_stock', $request->quantity_stock);
+            Shoe::where('id_shoe', $id)->update([
+                'id_staff' => $user->id_user,
+            ]);
+            return response()->json(['message' => 'Biến thể đã tồn tại, cập nhật số lượng thành công'],200);
+        } else {
+            ShoeVariant::create([
+                'id_shoe' => $id,
+                'color' => $request->color,
+                'size' => $request->size,
+                'quantity_stock' =>  $request->quantity_stock,
+                'quantity_sold' =>  0
+            ]);
+            Shoe::where('id_shoe', $id)->update([
+                'id_staff' => $user->id_user,
+            ]);
+            return response()->json(['message' => 'Thêm biên thể sản phẩm thành công'],200);
+        }
+    }
+    return response()->json([
+        'message' => "Người dùng không có quyền truy cập!"
+    ], 403);
+}
+
+public function updateVariant(Request $request, $id)
+{
+    $user = $request->user();
+    if ($user->id_role === 1 || $user->id_role === 2) {
+        $variant = ShoeVariant::where('id_variant', $id)->update([
+            'quantity_stock' =>  $request->quantity_stock,
+        ]);
+            Shoe::where('id_shoe', $variant->id_shoe)->update([
+                'id_staff' => $user->id_user,
+            ]);
+
+            return response()->json([
+                'message' => "Cập nhật số lượng biến thể thành công"
+            ], 200);
+      
+         
+    }
+    return response()->json([
+        'message' => "Người dùng không có quyền truy cập!"
+    ], 403);
+}
+
     /**
      * Remove the specified resource from storage.
      *
@@ -373,6 +428,10 @@ public function updateShoe(Request $request, $id)
         }])->paginate(10);
 
         return response()->json($result);
+    }
+    public function getVariantsByIdProduct($id){
+        $variants = ShoeVariant::where('id_shoe',$id)->get();
+        return response()->json($variants);
     }
 
     public function revenueStatistics (Request $request){
