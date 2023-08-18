@@ -17,6 +17,9 @@ class User extends Authenticatable
     protected $primaryKey = "id_user";
 
     public $timestamps = false;
+    protected $casts = [
+        'gender' => 'boolean',
+    ];
     
     protected $fillable = [
         'fullname', 

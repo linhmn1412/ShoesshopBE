@@ -6,6 +6,8 @@ namespace App\Http\Controllers\API\V1;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Discount;
+use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\Shoe;
 use App\Models\ShoeVariant;
 use Illuminate\Http\Request;
@@ -100,27 +102,14 @@ public function updateShoe(Request $request, $id)
                 Storage::disk('public')->put($imageName, file_get_contents($uploadedFile));
                
             }
-        //     $product['name_shoe'] = $request->name_shoe;
-        //     $product['id_category'] = $request->id_category;
-        //     $product['id_brand'] = $request->id_brand;
-        //     $product['description'] = $request->description;
-        //     $product['price'] = $request->price;
-        //    // $product['image'] = $imageName;
-        //     $product['id_discount'] = $request->id_discount;
-        //     $product['id_staff'] = $user->id_user;
-
-          
-
-        //     $product->save();
-        
             Shoe::where('id_shoe', $id)->update([
                 'name_shoe' => $request->input('name_shoe'),
                  'id_category' => $request->id_category,
                 'id_brand' => $request->id_brand,
                 'description' => $request->description,
                 'price' => $request->price,
-            
-               'image' => $imageName  ,
+                'status' => $request->status,
+                'image' => $imageName  ,
                 'id_discount' => $request->id_discount,
                 'id_staff' => $user->id_user,
                 
@@ -174,9 +163,10 @@ public function updateVariant(Request $request, $id)
 {
     $user = $request->user();
     if ($user->id_role === 1 || $user->id_role === 2) {
-        $variant = ShoeVariant::where('id_variant', $id)->update([
+        ShoeVariant::where('id_variant', $id)->update([
             'quantity_stock' =>  $request->quantity_stock,
         ]);
+        $variant = ShoeVariant::where('id_variant', $id)->first();
             Shoe::where('id_shoe', $variant->id_shoe)->update([
                 'id_staff' => $user->id_user,
             ]);
@@ -228,7 +218,7 @@ public function updateVariant(Request $request, $id)
             $variant = ShoeVariant::findOrFail($id);
     
             // Kiểm tra xem sản phẩm có tồn tại trong ShoeVariant không
-            $orderDetail = DB::table('orderdetail')->where('id_variant', $id)->first();
+            $orderDetail = OrderDetail::where('id_variant', $id)->first();
     
             if ($orderDetail) {
                 return response()->json([

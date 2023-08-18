@@ -63,7 +63,7 @@ class CategoryController extends RoutingController
     {
         $user = $request->user();
         Category::where('id_category', $id)->update([
-            'name_catgory' => $request->name,
+            'name_category' => $request->name,
             'id_staff' => $user->id_user,
         ]);
         return response()->json(["message" => "Cập nhật danh mục thành công"],200);

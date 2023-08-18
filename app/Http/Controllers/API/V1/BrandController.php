@@ -66,7 +66,7 @@ class BrandController extends RoutingController
             'name_brand' => $request->name,
             'id_staff' => $user->id_user,
         ]);
-        return response()->json(["message" => "Cập nhật thương hiệu thành công"]);
+        return response()->json(["message" => "Cập nhật thương hiệu thành công"],200);
     }
 
     /**

@@ -28,6 +28,7 @@ Route::group(['prefix' => 'v1'], function () {
     
     Route::post('login', [AuthController::class, 'login'])->name('auth.login');
     Route::post('register', [AuthController::class, 'register'])->name('auth.register');
+    Route::post('forgot-password', [AuthController::class, 'sendMail']);
 
 
     //product
@@ -100,13 +101,14 @@ Route::group(['prefix' => 'v1'], function () {
         Route::delete('/product/{id}/delete', [ProductController::class, 'destroy']);
         Route::post('/product/{id}/variant/create', [ProductController::class, 'createVariant']);
         Route::put('/product-variant/{id}/update', [ProductController::class, 'updateVariant']);
-        Route::delete('/product-variant/{id}delete', [ProductController::class, 'destroyVariant']);
+        Route::delete('/product-variant/{id}/delete', [ProductController::class, 'destroyVariant']);
 
         //manage staffs
         Route::get('/getAllStaffs', [AuthController::class, 'getAllStaffs']);
         Route::post('/staff/create', [AuthController::class, 'createStaff']);
         Route::put('/staff/{id}/update', [AuthController::class, 'updateStaff']);
-        Route::put('/account/{id}/update', [AuthController::class, 'updateAccount']);
+        Route::put('/account/update', [AuthController::class, 'updateAccount']);
+        Route::put('/change-password', [AuthController::class, 'changePassword']);
 
         //review 
         Route::post('/reviews/create', [ReviewController::class, 'store']);

@@ -120,14 +120,14 @@ class CartItemController extends RoutingController
             CartItem::where('id_variant', $request->id_variant)
                 ->where('id_customer', $id_customer)
                 ->increment('quantity', $quantity);
-            return response()->json(['message' => 'Cập nhật sản phẩm trong giỏ hàng thành công']);
+            return response()->json(['message' => 'Cập nhật sản phẩm trong giỏ hàng thành công'],200);
         } else {
             CartItem::create([
                 'id_customer' => $id_customer,
                 'id_variant' => $request->id_variant,
                 'quantity' => $quantity,
             ]);
-            return response()->json(['message' => 'Thêm sản phẩm vào giỏ hàng thành công']);
+            return response()->json(['message' => 'Thêm sản phẩm vào giỏ hàng thành công'],200);
         }
     }
   
