@@ -35,16 +35,20 @@ class AuthController extends RoutingController
                 ->orWhere('phone_number', $credentials['usernameOrEmailOrPhone']);
         })->first();
 
-        // If the user is not found or the password is incorrect, throw an exception
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'message' => ['Login failed'],
-            ]);
+        if(!$user) {
+            return response()->json([
+                'errors' => ['usernameOrEmailOrPhone' => 'Tài khoản không hợp lệ.'],
+            ],201);
+        }
+        if (!Hash::check($credentials['password'], $user->password)) {
+            return response()->json([
+                'errors' => ['password' => 'Mật khẩu không hợp lệ'],
+            ],201);
         }
 
         // Authenticate the user and generate the access token
         $token = $user->createToken('API Token')->plainTextToken;
-        return response()->json(['user' => $user, 'access_token' => $token]);
+        return response()->json(['user' => $user, 'access_token' => $token],200);
     }
 
     public function register(Request $request)
@@ -119,6 +123,7 @@ class AuthController extends RoutingController
             return response()->json($staffs);
         }
     }
+
     public function createStaff(Request $request)
     {
         $admin = $request->user();
