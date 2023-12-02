@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'v1'], function () {
 
     //auth
-    
+
     Route::post('login', [AuthController::class, 'login'])->name('auth.login');
     Route::post('register', [AuthController::class, 'register'])->name('auth.register');
     Route::post('forgot-password', [AuthController::class, 'sendMail']);
@@ -55,6 +55,8 @@ Route::group(['prefix' => 'v1'], function () {
     //review
     Route::get('/product-{id}/review', [ReviewController::class, 'getReviewsProductById']);
 
+    Route::get('/payment-vnpay/callback', [OrderController::class, 'callback']);
+
     Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
         return $request->user();
     });
@@ -74,6 +76,9 @@ Route::group(['prefix' => 'v1'], function () {
         Route::put('/order/{id}/cancel', [OrderController::class, 'cancelOrder']);
         Route::put('/order/{id}/receive', [OrderController::class, 'receiveOrder']);
         Route::get('/getOrdersByUser', [OrderController::class, 'getOrdersByUser']);
+        Route::get('/getOrder/{id}', [OrderController::class, 'getOrderById']);
+        Route::post('/payment-vnpay', [OrderController::class, 'payment']);
+
 
         //manage discount
         Route::get('/getAllDiscounts', [DiscountController::class, 'getAllDiscounts']);
@@ -112,12 +117,9 @@ Route::group(['prefix' => 'v1'], function () {
 
         //review 
         Route::post('/reviews/create', [ReviewController::class, 'store']);
-         
+
         //statistics
         Route::get('/top5-selling-products',  [ProductController::class, 'topSellingProducts']);
         Route::get('/revenue-statistics',  [ProductController::class, 'revenueStatistics']);
-
-
     });
-  
 });

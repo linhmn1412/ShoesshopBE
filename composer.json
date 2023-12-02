@@ -11,7 +11,8 @@
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.2",
-        "laravel/tinker": "^2.7"
+        "laravel/tinker": "^2.7",
+        "vnpay/ecom-php": "dev-master"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -60,8 +61,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
-        }
+        }   
     },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+    "minimum-stability": "dev",
+    "prefer-stable": false
 }

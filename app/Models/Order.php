@@ -24,19 +24,20 @@ class Order extends Model
     }
 
     public function reviews()
-{
-    return $this->hasMany(Review::class, 'id_order');
-}
+    {
+        return $this->hasMany(Review::class, 'id_order');
+    }
 
     protected $fillable = [
         'id_customer',
         'name_buyer',
-        'phone_number', 
-        'address', 
-        'note', 
-        'total', 
-        'payment', 
+        'phone_number',
+        'address',
+        'note',
+        'total',
+        'payment',
         'status',
-        'id_staff'
+        'id_staff',
+        'payment_id'
     ];
 }
